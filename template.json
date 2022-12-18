@@ -8,7 +8,7 @@
             "attribute7": null,
             "attribute8": "value8",
             "attribute9":  true,
-            "attribute9":  [false, true, 2]
+            "attribute10":  [false, true, 2]
         }
     },
     "array1": [1, 2, 3, 4, 5],
@@ -37,3 +37,4 @@
         }
     ]
 }
+

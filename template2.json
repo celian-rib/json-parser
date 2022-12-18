@@ -1,3 +1,4 @@
 {
-    "key": "value"
+    "tab": ["tab1", "tab2", "tab3"],
+    "att": 5
 }

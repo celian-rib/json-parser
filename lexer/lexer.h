@@ -1,5 +1,7 @@
-#include <stddef.h>
 #ifndef LEXER_H
+#define LEXER_H
+
+#include <stddef.h>
 
 enum TOKEN_TYPE
 {
