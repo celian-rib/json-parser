@@ -1,0 +1,39 @@
+{
+    "attribute1": "value1",
+    "attribute2": "value2",
+    "attribute3": {
+        "attribute4": "value4",
+        "attribute5": "value5",
+        "attribute6": {
+            "attribute7": null,
+            "attribute8": "value8",
+            "attribute9":  true,
+            "attribute9":  [false, true, 2]
+        }
+    },
+    "array1": [1, 2, 3, 4, 5],
+    "array2": ["a", "b", "c", "d", "e"],
+    "array3": [true, false, true, false, true],
+    "array4": [null, null, null, null, null],
+    "array5": [
+        {
+            "attribute10": "value10",
+            "attribute11": "value11",
+            "attribute12": "value12"
+        },
+        {
+            "attribute13": "value13",
+            "attribute14": "value14",
+            "attribute15": "value15"
+        },
+        {
+            "attribute16": "value16",
+            "attribute17": "value17",
+            "attribute18": {
+                "attribute19": "value19",
+                "attribute20": "value20",
+                "attribute21": "value21"
+            }
+        }
+    ]
+}
