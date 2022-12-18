@@ -1,24 +1,24 @@
-## JSON LL(1) Parser
+# JSON Parser
+> Lexer + Parser LL(1) + Solver
 
-#### Exended grammar
+> Made for C
 
-```
-json -> value $
-value -> dict | list | STRING | NUMBER | "true" | "false" | "null"
-list -> "[" value ("," value)* "]"
-dict -> "{" pair ("," pair)* "}"
-pair -> STRING ":" value
-```
+### Philosophy
 
-#### TODO
+- Ease of use
+- Fast
+- Robust
+
+### TODO
 
 - [ ] Robust lexer
-- [ ] Robust parser with follow on error
-- [ ] AST
+- [x] AST
 - [ ] Evaluator
+- [ ] TU
+- [ ] Fuzzer
+- [ ] Memory leaks
 
-
-#### How to use
+### How to use
 
 ```c
 // Parse your input string into a json object
@@ -30,9 +30,9 @@ char* = get_value(json, "value1.value2.value4");
 
 > If the query string **does not match** anything `get_value` will return `NULL`.
 
-#### Examples
+### Examples
 
-##### 1/ Attribute from nested objects
+#### 1/ Attribute from nested objects
 
 ```json
 {
@@ -51,7 +51,7 @@ int age = get_value(json, "user.age");
 
 ---
 
-##### 2/ Array element
+#### 2/ Array element
 
 ```json
 {
@@ -67,7 +67,7 @@ char *tab1 = get_value(json, "my_array[0]");
 
 ---
 
-##### 3/ Attribute from object within array
+#### 3/ Attribute from object within array
 
 ```json
 {
@@ -92,7 +92,7 @@ char *name = get_value(json, "users[1].name");
 
 ---
 
-##### 4/ Top level double array element
+#### 4/ Top level double array element
 
 ```json
 [
@@ -108,7 +108,7 @@ char *name = get_value(json, "users[1].name");
 int val = get_value(json, "[2][1]");
 ```
 
-##### 5/ Top level value
+#### 5/ Top level value
 
 ```json
 "Tequilla"
@@ -119,10 +119,10 @@ int val = get_value(json, "[2][1]");
 ```c
 int val = get_value(json, "");
 // or
-int val = get_value(json);
+int val = get_value(json, NULL);
 ```
 
-##### 6/ Object
+#### 6/ Object
 
 ```json
 {
@@ -138,4 +138,13 @@ int val = get_value(json);
 struct json_object *my_obj = get_value(json, "my_obj");
 ```
 
+### Exended grammar
+
+```
+json -> value $
+value -> dict | list | STRING | NUMBER | "true" | "false" | "null"
+list -> "[" value ("," value)* "]"
+dict -> "{" pair ("," pair)* "}"
+pair -> STRING ":" value
+```
 
