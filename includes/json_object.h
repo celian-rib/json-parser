@@ -1,7 +1,7 @@
 #ifndef JSON_OBJECT_H
 #define JSON_OBJECT_H
 
-#include "../lexer/lexer.h"
+#include "lexer.h"
 
 struct json_object
 {
@@ -11,5 +11,7 @@ struct json_object
 };
 
 char *get_value(struct json_object *object, char *key);
+
+void free_json_object(struct json_object *object);
 
 #endif // !JSON_OBJECT_H

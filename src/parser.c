@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../lexer/lexer.h"
-#include "../object/json_object.h"
+#include "json_object.h"
+#include "lexer.h"
 
 static struct json_object *parse_value();
 static struct json_object *parse_list();

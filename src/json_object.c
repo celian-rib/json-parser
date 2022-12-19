@@ -1,5 +1,6 @@
 #include "json_object.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,7 +16,7 @@ char *get_value(struct json_object *object, char *path)
 
     if (object->token->type == TOKEN_TYPE_LEFT_BRACE)
     {
-        for (int i = 0; i < object->children_count; i++)
+        for (size_t i = 0; i < object->children_count; i++)
         {
             struct json_object *child = object->children[i];
             if (strcmp(child->token->value, key) == 0)
@@ -30,11 +31,11 @@ char *get_value(struct json_object *object, char *path)
     }
     else if (object->token->type == TOKEN_TYPE_LEFT_BRACKET)
     {
-        int index = atoi(key);
+        size_t index = atoi(key);
         if (index >= object->children_count)
             return NULL; // Out of bounds
 
-        printf("index: %d\n", index);
+        printf("index: %zu\n", index);
         struct json_object *child = object->children[index];
 
         if (child->token->type == TOKEN_TYPE_LEFT_BRACE
@@ -59,4 +60,20 @@ char *get_value(struct json_object *object, char *path)
         return object->children[0]->token->value;
 
     return NULL; // More path to go but no children
+}
+
+void free_json_object(struct json_object *object)
+{
+    if (object == NULL)
+        return;
+
+    free_token(object->token);
+
+    for (size_t i = 0; i < object->children_count; i++)
+    {
+        free_json_object(object->children[i]);
+    }
+
+    free(object->children);
+    free(object);
 }

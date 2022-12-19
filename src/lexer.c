@@ -36,18 +36,34 @@ static void increment_cursor()
     state.cursor++;
 }
 
+static void skip_whitespace()
+{
+    while (isspace(*state.cursor))
+        increment_cursor();
+}
+
+static struct token *create_non_terminal_token(enum TOKEN_TYPE type)
+{
+    struct token *token = malloc(sizeof(struct token));
+    token->type = type;
+    token->value = malloc(2);
+    token->value[0] = *state.cursor;
+    token->value[1] = '\0';
+    state.look_ahead = token;
+    return token;
+}
+
 static struct token *generate_next_token()
 {
     struct token *token = malloc(sizeof(struct token));
     token->type = TOKEN_TYPE_NONE;
     token->value = NULL;
 
-    while (isspace(*state.cursor))
-        increment_cursor();
+    skip_whitespace();
 
     if (*state.cursor == '\0')
     {
-        token->type = TOKEN_TYPE_EOF;
+        struct token *token = create_non_terminal_token(TOKEN_TYPE_EOF);
         increment_cursor();
         return token;
     }
@@ -208,7 +224,7 @@ void lexer_init(char *json)
 
 struct token *eat_token(enum TOKEN_TYPE type)
 {
-    if (state.look_ahead->type != type)
+    if (get_token_type() != type)
     {
         errx(1, "Error: Invalid token type. Expected %c, got %c (l:%zu, c:%zu)",
              type, state.look_ahead->type, state.look_ahead->line,
@@ -231,4 +247,10 @@ enum TOKEN_TYPE get_token_type()
     if (state.look_ahead == NULL)
         return TOKEN_TYPE_NONE;
     return state.look_ahead->type;
+}
+
+void free_token(struct token *token)
+{
+    free(token->value);
+    free(token);
 }

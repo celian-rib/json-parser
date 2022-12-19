@@ -1,8 +1,9 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "parser/parser.h"
-#include "object/json_object.h"
+#include "json_object.h"
+#include "parser.h"
 
 static void print_tree(struct json_object *node)
 {
@@ -11,12 +12,10 @@ static void print_tree(struct json_object *node)
 
     printf("=> %s\n", node->token->value);
 
-    for (int i = 0; i < node->children_count; i++)
-    {
+    for (size_t i = 0; i < node->children_count; i++)
         printf("--> %s\n", node->children[i]->token->value);
-    }
 
-    for (int i = 0; i < node->children_count; i++)
+    for (size_t i = 0; i < node->children_count; i++)
         print_tree(node->children[i]);
 }
 
@@ -50,5 +49,6 @@ int main(int argc, char *argv[])
         else
             printf("Result not found\n");
     }
-}
 
+    free_json_object(json);
+}
