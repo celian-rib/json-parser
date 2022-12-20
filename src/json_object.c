@@ -63,7 +63,7 @@ char *get_value_rec(struct json_object *object, char **path_ptr)
     return NULL; // More path to go but no children
 }
 
-char *get_value(struct json_object *object, char *path)
+char *json_get_value(struct json_object *object, char *path)
 {
     if (object == NULL)
         return NULL;
@@ -79,24 +79,24 @@ char *get_value(struct json_object *object, char *path)
     return result;
 }
 
-bool get_bool(struct json_object *object, char *key)
+bool json_get_bool(struct json_object *object, char *key)
 {
-    return strcmp(get_value(object, key), "1") == 0;
+    return strcmp(json_get_value(object, key), "1") == 0;
 }
 
-int get_int(struct json_object *object, char *key)
+int json_get_int(struct json_object *object, char *key)
 {
-    return atoi(get_value(object, key));
+    return atoi(json_get_value(object, key));
 }
 
-double get_double(struct json_object *object, char *key)
+double json_get_double(struct json_object *object, char *key)
 {
-    return atof(get_value(object, key));
+    return atof(json_get_value(object, key));
 }
 
-float get_float(struct json_object *object, char *key)
+float json_get_float(struct json_object *object, char *key)
 {
-    return atof(get_value(object, key));
+    return atof(json_get_value(object, key));
 }
 
 void free_json_object(struct json_object *object)

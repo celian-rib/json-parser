@@ -5,22 +5,22 @@
 
 #include "lexer.h"
 
-struct json_object
+typedef struct json_object
 {
     struct token *token;
     struct json_object **children;
     size_t children_count;
-};
+} json_object;
 
-char *get_value(struct json_object *object, char *key);
+char *json_get_value(struct json_object *object, char *key);
 
-bool get_bool(struct json_object *object, char *key);
+bool json_get_bool(struct json_object *object, char *key);
 
-int get_int(struct json_object *object, char *key);
+int json_get_int(struct json_object *object, char *key);
 
-double get_double(struct json_object *object, char *key);
+double json_get_double(struct json_object *object, char *key);
 
-float get_float(struct json_object *object, char *key);
+float json_get_float(struct json_object *object, char *key);
 
 void free_json_object(struct json_object *object);
 

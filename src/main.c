@@ -36,14 +36,14 @@ int main(int argc, char *argv[])
     }
     buffer[buffer_length] = '\0';
 
-    struct json_object *json = parse_json(buffer);
+    json_object *json = parse_json(buffer);
 
     printf("Parsing successful!\n");
     print_tree(json);
 
     if (argc > 1)
     {
-        char *value = get_value(json, argv[1]);
+        char *value = json_get_value(json, argv[1]);
         if (value)
             printf("Result: %s\n", value);
         else
