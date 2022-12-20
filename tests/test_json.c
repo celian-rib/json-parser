@@ -18,6 +18,28 @@ Test(test_objects, test_str_attribute)
     free_json_object(json);
 }
 
+Test(test_objects, test_backslashed_str_attribute)
+{
+    char json_str[] = "{\"name\":\"Im on a\nnew line that a \ttab\"}";
+
+    struct json_object *json = parse_json(json_str);
+
+    char *name = get_value(json, "name");
+    cr_expect_str_eq(name, "Im on a\nnew line that a \ttab");
+
+    free_json_object(json);
+}
+
+Test(test_objects, test_heavy_backslashed_str_attribute)
+{
+    char json_str[] = "{\"name\":\"Im on a\\nnew line\n\n\n\nthat a \\ttab\"}";
+
+    struct json_object *json = parse_json(json_str);
+
+    char *name = get_value(json, "name");
+    cr_expect_str_eq(name, "Im on a\\nnew line\n\n\n\nthat a \\ttab");
+}
+
 Test(test_objects, test_int_attribute)
 {
     char json_str[] = "{\"age\":30,\"height\":175}";
@@ -58,7 +80,7 @@ Test(test_objects, test_null_attribute)
 
     struct json_object *json = parse_json(json_str);
 
-    cr_expect_eq(*get_value(json, "is_null"), '\0');
+    cr_expect_eq(get_value(json, "is_null"), NULL);
 
     free_json_object(json);
 }
@@ -105,15 +127,171 @@ Test(test_nested_objects, test_nested_objects_deep)
     free_json_object(json);
 }
 
-// Test(test_objects, test_array_attribute)
-// {
-//     char json_str[] = "{\"numbers\":[1,2,3,4,5,6,7,8,9,10,11]}";
-//
-//     struct json_object *json = parse_json(json_str);
-//
-//     cr_expect_str_eq(get_value(json, "numbers[0]"), "1");
-//     cr_expect_str_eq(get_value(json, "numbers[1]"), "2");
-//     cr_expect_str_eq(get_value(json, "numbers[10]"), "11");
-//
-//     free_json_object(json);
-// }
+Test(test_arrays, test_array_attribute)
+{
+    char json_str[] = "{\"numbers\":[1,2,3,4,5,6,7,8,9,10,11]}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, "numbers[0]"), "1");
+    cr_expect_str_eq(get_value(json, "numbers[1]"), "2");
+    cr_expect_str_eq(get_value(json, "numbers[10]"), "11");
+
+    free_json_object(json);
+}
+
+Test(test_arrays, test_object_in_array_attribute)
+{
+    char json_str[] = "{\"numbers\":[{\"one\":1},{\"two\":2},{\"three\":3}]}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, "numbers[0].one"), "1");
+    cr_expect_str_eq(get_value(json, "numbers[1].two"), "2");
+    cr_expect_str_eq(get_value(json, "numbers[2].three"), "3");
+
+    free_json_object(json);
+}
+
+Test(test_arrays, test_array_in_array_attribute)
+{
+    char json_str[] = "{\"numbers\":[[1,2,3],[4,5,6],[7,8,9]]}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, "numbers[0][0]"), "1");
+    cr_expect_str_eq(get_value(json, "numbers[0][1]"), "2");
+    cr_expect_str_eq(get_value(json, "numbers[0][2]"), "3");
+    cr_expect_str_eq(get_value(json, "numbers[1][0]"), "4");
+    cr_expect_str_eq(get_value(json, "numbers[1][1]"), "5");
+    cr_expect_str_eq(get_value(json, "numbers[1][2]"), "6");
+    cr_expect_str_eq(get_value(json, "numbers[2][0]"), "7");
+    cr_expect_str_eq(get_value(json, "numbers[2][1]"), "8");
+    cr_expect_str_eq(get_value(json, "numbers[2][2]"), "9");
+
+    free_json_object(json);
+}
+
+Test(test_arrays, test_array_in_array_in_array_attribute)
+{
+    char json_str[] = "{\"numbers\":[[[1,2,3],[4,5,6],[7,8,9]]]}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, "numbers[0][0][0]"), "1");
+    cr_expect_str_eq(get_value(json, "numbers[0][0][1]"), "2");
+    cr_expect_str_eq(get_value(json, "numbers[0][0][2]"), "3");
+    cr_expect_str_eq(get_value(json, "numbers[0][1][0]"), "4");
+    cr_expect_str_eq(get_value(json, "numbers[0][1][1]"), "5");
+    cr_expect_str_eq(get_value(json, "numbers[0][1][2]"), "6");
+    cr_expect_str_eq(get_value(json, "numbers[0][2][0]"), "7");
+    cr_expect_str_eq(get_value(json, "numbers[0][2][1]"), "8");
+    cr_expect_str_eq(get_value(json, "numbers[0][2][2]"), "9");
+
+    free_json_object(json);
+}
+
+Test(test_top_level, top_level_null)
+{
+    char json_str[] = "null";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_eq(get_value(json, ""), NULL);
+    cr_expect_eq(get_value(json, NULL), NULL);
+
+    free_json_object(json);
+}
+
+Test(test_top_level, top_level_true)
+{
+    char json_str[] = "true";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, ""), "1");
+    cr_expect_str_eq(get_value(json, NULL), "1");
+
+    free_json_object(json);
+}
+
+Test(test_top_level, top_level_false)
+{
+    char json_str[] = "false";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, ""), "0");
+    cr_expect_str_eq(get_value(json, NULL), "0");
+
+    free_json_object(json);
+}
+
+Test(test_top_level, top_level_string)
+{
+    char json_str[] = "\"Hello World\"";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, ""), "Hello World");
+    cr_expect_str_eq(get_value(json, NULL), "Hello World");
+
+    free_json_object(json);
+}
+
+Test(test_top_level, top_level_number)
+{
+    char json_str[] = "12345";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, ""), "12345");
+    cr_expect_str_eq(get_value(json, NULL), "12345");
+
+    free_json_object(json);
+}
+
+Test(test_top_level, top_level_array)
+{
+    char json_str[] = "[1,2,3,4,5,6,7,8,9,10,11]";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, "[0]"), "1");
+    cr_expect_str_eq(get_value(json, "[1]"), "2");
+    cr_expect_str_eq(get_value(json, "[10]"), "11");
+
+    free_json_object(json);
+}
+
+Test(test_top_level, top_level_arrayin_array)
+{
+    char json_str[] = "[[1,2,3],[4,5,6],[7,8,9]]";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, "[0][0]"), "1");
+    cr_expect_str_eq(get_value(json, "[0][1]"), "2");
+    cr_expect_str_eq(get_value(json, "[0][2]"), "3");
+    cr_expect_str_eq(get_value(json, "[1][0]"), "4");
+    cr_expect_str_eq(get_value(json, "[1][1]"), "5");
+    cr_expect_str_eq(get_value(json, "[1][2]"), "6");
+    cr_expect_str_eq(get_value(json, "[2][0]"), "7");
+    cr_expect_str_eq(get_value(json, "[2][1]"), "8");
+    cr_expect_str_eq(get_value(json, "[2][2]"), "9");
+
+    free_json_object(json);
+}
+
+Test(test_top_level, top_level_object)
+{
+    char json_str[] = "{\"one\":1,\"two\":2,\"three\":3}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_str_eq(get_value(json, "one"), "1");
+    cr_expect_str_eq(get_value(json, "two"), "2");
+    cr_expect_str_eq(get_value(json, "three"), "3");
+
+    free_json_object(json);
+}

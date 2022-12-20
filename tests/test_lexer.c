@@ -150,7 +150,7 @@ Test(test_lexer, test_null)
 
     struct token *token = get_token();
     cr_expect_eq(get_token_type(), TOKEN_TYPE_NULL);
-    cr_expect_eq(*token->value, '\0');
+    cr_expect_eq(token->value, NULL);
     EXPECT_INT_EQ(token->line, 1);
     EXPECT_INT_EQ(token->column, 1);
 

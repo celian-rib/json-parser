@@ -1,6 +1,7 @@
 #include "json_object.h"
 
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "string.h"
@@ -13,7 +14,10 @@ char *get_value_rec(struct json_object *object, char **path_ptr)
     if (path_ptr == NULL)
         return NULL;
 
-    char *key = strtok_r(NULL, ".[]", path_ptr);
+    char *key = strtok_r(NULL, ".[", path_ptr);
+
+    if (key == NULL)
+        return NULL;
 
     if (object->token->type == TOKEN_TYPE_LEFT_BRACE)
     {
@@ -41,16 +45,13 @@ char *get_value_rec(struct json_object *object, char **path_ptr)
         if (child->token->type == TOKEN_TYPE_LEFT_BRACE
             || child->token->type == TOKEN_TYPE_LEFT_BRACKET)
         {
-            if (path_ptr == NULL)
+            if (*path_ptr == NULL)
                 return NULL; // No key or index specified
             return get_value_rec(child, path_ptr);
         }
-        else
-        {
-            if (*path_ptr == NULL)
-                return child->token->value;
-            return NULL; // No key specified
-        }
+
+        if (*path_ptr == NULL)
+            return child->token->value;
         return get_value_rec(child, path_ptr);
     }
 
@@ -64,6 +65,14 @@ char *get_value_rec(struct json_object *object, char **path_ptr)
 
 char *get_value(struct json_object *object, char *path)
 {
+    if (object == NULL)
+        return NULL;
+
+    if (path == NULL)
+        return object->token->value;
+    if (path[0] == '\0')
+        return object->token->value;
+
     char *path_ptr = strdup(path);
     char *result = get_value_rec(object, &path_ptr);
     free(path_ptr);

@@ -137,8 +137,7 @@ static struct token *create_null_token()
 {
     struct token *token = malloc(sizeof(struct token));
     token->type = TOKEN_TYPE_NULL;
-    token->value = malloc(1);
-    token->value[0] = '\0';
+    token->value = NULL;
     token->line = state.line;
     token->column = state.column;
 

@@ -9,15 +9,6 @@
 - Fast
 - Robust
 
-### TODO
-
-- [x] Robust lexer
-- [x] AST
-- [ ] Evaluator
-- [x] TU
-- [ ] Fuzzer
-- [x] Memory leaks
-
 ### How to use
 
 ```c
