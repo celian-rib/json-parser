@@ -79,6 +79,26 @@ char *get_value(struct json_object *object, char *path)
     return result;
 }
 
+bool get_bool(struct json_object *object, char *key)
+{
+    return strcmp(get_value(object, key), "1") == 0;
+}
+
+int get_int(struct json_object *object, char *key)
+{
+    return atoi(get_value(object, key));
+}
+
+double get_double(struct json_object *object, char *key)
+{
+    return atof(get_value(object, key));
+}
+
+float get_float(struct json_object *object, char *key)
+{
+    return atof(get_value(object, key));
+}
+
 void free_json_object(struct json_object *object)
 {
     if (object == NULL)

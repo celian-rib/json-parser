@@ -1,5 +1,7 @@
 #include <criterion/criterion.h>
 
+#include "criterion/assert.h"
+#include "criterion/internal/assert.h"
 #include "json_object.h"
 #include "parser.h"
 
@@ -292,6 +294,50 @@ Test(test_top_level, top_level_object)
     cr_expect_str_eq(get_value(json, "one"), "1");
     cr_expect_str_eq(get_value(json, "two"), "2");
     cr_expect_str_eq(get_value(json, "three"), "3");
+
+    free_json_object(json);
+}
+
+Test(test_getters, test_get_bool)
+{
+    char json_str[] = "{\"bool\":true}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_eq(get_bool(json, "bool"), 1);
+
+    free_json_object(json);
+}
+
+Test(test_getters, test_get_int)
+{
+    char json_str[] = "{\"int\":12345}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_eq(get_int(json, "int"), 12345);
+
+    free_json_object(json);
+}
+
+Test(test_getters, test_get_double)
+{
+    char json_str[] = "{\"double\":12345.6789}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_eq(get_double(json, "double"), 12345.6789);
+
+    free_json_object(json);
+}
+
+Test(test_getters, test_get_float)
+{
+    char json_str[] = "{\"float\":12345.6789}";
+
+    struct json_object *json = parse_json(json_str);
+
+    cr_expect_leq(get_float(json, "float") - 1, 12345.6789);
 
     free_json_object(json);
 }
