@@ -1,41 +1,30 @@
 CC = gcc
-CPPFLAGS = -D_DEFAULT_SOURCE
 CFLAGS = -Wall -Wextra -std=c99 -fPIC -fno-builtin -Wvla -I includes
 LDFLAGS = -shared
-VPATH = src
 
 TARGET_LIB = libjson.so
 
-SRC_OBJS= lexer.o parser.o json_object.o 
-OBJS = main.o $(SRC_OBJS)
+SRC_OBJS= src/lexer.o src/parser.o src/json.o 
 
-TESTS_OBJS = $(SRC_OBJS) tests/test_json.o tests/test_lexer.o
+TESTS_OBJS = tests/test_json.o tests/test_lexer.o
 
-all: library
+all: $(TARGET_LIB) tests
 
-library: $(TARGET_LIB)
-$(TARGET_LIB): CFLAGS += -pedantic -fvisibility=hidden -Werror
-$(TARGET_LIB): LDFLAGS += -Wl
-$(TARGET_LIB): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-dev: CFLAGS += -fsanitize=address -g
-dev: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+$(TARGET_LIB): $(SRC_OBJS)
+	$(CC) -shared -o $@ $^
 
-check: CFLAGS += -fsanitize=address -lcriterion
-check: CFLAGS += -L /opt/homebrew/lib/
 check: CFLAGS += -I /opt/homebrew/Cellar/criterion/2.4.1_1/include/
-check: $(TESTS_OBJS)
-	clang-format --dry-run --Werror src/*.c
-	clang-format --dry-run --Werror tests/*.c
-	clang-format --dry-run --Werror includes/*.h
-	$(CC) $(CFLAGS) -o test_suite $^
-	./test_suite
-	make clean
-	make
+check: $(TARGET_LIB) $(TESTS_OBJS)
+	$(CC) -o $@ $^ -L. -ljson -L /opt/homebrew/lib/ -lcriterion -fsanitize=address -g
+	./check
+
+main: example/main.o $(TARGET_LIB)
+	$(CC) -o $@ $^ -L. -ljson
 
 clean:
-	$(RM) $(TARGET_LIB) $(OBJS) dev debug test_suite src/*.o tests/*.o
+	rm -f $(TARGET_LIB) $(SRC_OBJS) $(TESTS_OBJS) check main example/main.o
 
-.PHONY: all $(TARGET_LIB) clean dev check check_mac
+.PHONY: all clean check

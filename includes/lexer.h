@@ -53,6 +53,9 @@ struct token *get_token();
  */
 enum TOKEN_TYPE get_token_type();
 
+/*
+ * Free the given token object
+ */
 void free_token(struct token *token);
 
 #endif // !LEXER_H

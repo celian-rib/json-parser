@@ -14,13 +14,13 @@
 
 ```c
 // Parse your input string into a json object
-json_object *json = parse_json(input);
+json_object *json = json_parse(input);
 
 // Get values from the json object using a query string
 char* = json_get_value(json, "value1.value2.value4");
 
 // Clear everything when done
-free_json_object(json);
+json_free(json);
 ```
 
 > If the query string **does not match** anything `get_value` will return `NULL`.
@@ -28,17 +28,21 @@ free_json_object(json);
 ### API references
 
 ```c
-char *json_get_value(struct json_object *object, char *key);
+json *json_parse(char *json);
 
-bool json_get_bool(struct json_object *object, char *key);
+json *json_parse_file(FILE *file);
 
-int json_get_int(struct json_object *object, char *key);
+char *json_get_value(struct json *object, char *key);
 
-double json_get_double(struct json_object *object, char *key);
+bool json_get_bool(struct json *object, char *key);
 
-float json_get_float(struct json_object *object, char *key);
+int json_get_int(struct json *object, char *key);
 
-void free_json_object(struct json_object *object);
+double json_get_double(struct json *object, char *key);
+
+float json_get_float(struct json *object, char *key);
+
+void json_free(struct json *object);
 ```
 
 ### Examples

@@ -1,4 +1,4 @@
-#include "json_object.h"
+#include "json.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -6,7 +6,7 @@
 
 #include "string.h"
 
-char *get_value_rec(struct json_object *object, char **path_ptr)
+char *get_value_rec(struct json *object, char **path_ptr)
 {
     if (object == NULL)
         return NULL;
@@ -23,7 +23,7 @@ char *get_value_rec(struct json_object *object, char **path_ptr)
     {
         for (size_t i = 0; i < object->children_count; i++)
         {
-            struct json_object *child = object->children[i];
+            struct json *child = object->children[i];
             if (strcmp(child->token->value, key) == 0)
             {
                 if (*path_ptr == NULL)
@@ -40,7 +40,7 @@ char *get_value_rec(struct json_object *object, char **path_ptr)
         if (index >= object->children_count)
             return NULL; // Out of bounds
 
-        struct json_object *child = object->children[index];
+        struct json *child = object->children[index];
 
         if (child->token->type == TOKEN_TYPE_LEFT_BRACE
             || child->token->type == TOKEN_TYPE_LEFT_BRACKET)
@@ -55,15 +55,17 @@ char *get_value_rec(struct json_object *object, char **path_ptr)
         return get_value_rec(child, path_ptr);
     }
 
-    // TODO if no child error
-
     if (*path_ptr == NULL)
+    {
+        if (object->children_count == 0)
+            return NULL;
         return object->children[0]->token->value;
+    }
 
     return NULL; // More path to go but no children
 }
 
-char *json_get_value(struct json_object *object, char *path)
+char *json_get_value(struct json *object, char *path)
 {
     if (object == NULL)
         return NULL;
@@ -79,27 +81,27 @@ char *json_get_value(struct json_object *object, char *path)
     return result;
 }
 
-bool json_get_bool(struct json_object *object, char *key)
+bool json_get_bool(struct json *object, char *key)
 {
     return strcmp(json_get_value(object, key), "1") == 0;
 }
 
-int json_get_int(struct json_object *object, char *key)
+int json_get_int(struct json *object, char *key)
 {
     return atoi(json_get_value(object, key));
 }
 
-double json_get_double(struct json_object *object, char *key)
+double json_get_double(struct json *object, char *key)
 {
     return atof(json_get_value(object, key));
 }
 
-float json_get_float(struct json_object *object, char *key)
+float json_get_float(struct json *object, char *key)
 {
     return atof(json_get_value(object, key));
 }
 
-void free_json_object(struct json_object *object)
+void json_free(struct json *object)
 {
     if (object == NULL)
         return;
@@ -108,9 +110,29 @@ void free_json_object(struct json_object *object)
 
     for (size_t i = 0; i < object->children_count; i++)
     {
-        free_json_object(object->children[i]);
+        json_free(object->children[i]);
     }
 
     free(object->children);
     free(object);
+}
+
+json *json_parse_file(FILE *file)
+{
+    if (file == NULL)
+        return NULL;
+
+    fseek(file, 0, SEEK_END);
+    size_t size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *buffer = malloc(size + 1);
+    fread(buffer, 1, size, file);
+    buffer[size] = '\0';
+
+    json *result = json_parse(buffer);
+
+    free(buffer);
+
+    return result;
 }
