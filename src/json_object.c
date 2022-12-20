@@ -1,18 +1,19 @@
 #include "json_object.h"
 
 #include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "string.h"
 
-char *get_value(struct json_object *object, char *path)
+char *get_value_rec(struct json_object *object, char **path_ptr)
 {
     if (object == NULL)
         return NULL;
 
-    char *path_ptr = NULL;
-    char *key = strtok_r(path, ".[]", &path_ptr);
+    if (path_ptr == NULL)
+        return NULL;
+
+    char *key = strtok_r(NULL, ".[]", path_ptr);
 
     if (object->token->type == TOKEN_TYPE_LEFT_BRACE)
     {
@@ -21,9 +22,9 @@ char *get_value(struct json_object *object, char *path)
             struct json_object *child = object->children[i];
             if (strcmp(child->token->value, key) == 0)
             {
-                if (path_ptr == NULL)
+                if (*path_ptr == NULL)
                     return child->children[0]->token->value;
-                return get_value(child->children[0], path_ptr);
+                return get_value_rec(child->children[0], path_ptr);
             }
         }
 
@@ -35,7 +36,6 @@ char *get_value(struct json_object *object, char *path)
         if (index >= object->children_count)
             return NULL; // Out of bounds
 
-        printf("index: %zu\n", index);
         struct json_object *child = object->children[index];
 
         if (child->token->type == TOKEN_TYPE_LEFT_BRACE
@@ -43,23 +43,31 @@ char *get_value(struct json_object *object, char *path)
         {
             if (path_ptr == NULL)
                 return NULL; // No key or index specified
-            return get_value(child, path_ptr);
+            return get_value_rec(child, path_ptr);
         }
         else
         {
-            if (path_ptr == NULL)
+            if (*path_ptr == NULL)
                 return child->token->value;
             return NULL; // No key specified
         }
-        return get_value(child, path_ptr);
+        return get_value_rec(child, path_ptr);
     }
 
-    // TODO if no chil d error
+    // TODO if no child error
 
-    if (path_ptr == NULL)
+    if (*path_ptr == NULL)
         return object->children[0]->token->value;
 
     return NULL; // More path to go but no children
+}
+
+char *get_value(struct json_object *object, char *path)
+{
+    char *path_ptr = strdup(path);
+    char *result = get_value_rec(object, &path_ptr);
+    free(path_ptr);
+    return result;
 }
 
 void free_json_object(struct json_object *object)

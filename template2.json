@@ -1,4 +1,10 @@
 {
-    "tab": ["tab1", "tab2", "tab3"],
-    "att": 5
+    "def": "bonsoir",
+    "dex": null,
+    "dex2": 0,
+    "tab": [2, 3],
+    "att": {
+        "att1": "bonsoir",
+        "att2": "michel"
+    }
 }

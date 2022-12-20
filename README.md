@@ -11,12 +11,12 @@
 
 ### TODO
 
-- [ ] Robust lexer
+- [x] Robust lexer
 - [x] AST
 - [ ] Evaluator
-- [ ] TU
+- [x] TU
 - [ ] Fuzzer
-- [ ] Memory leaks
+- [x] Memory leaks
 
 ### How to use
 

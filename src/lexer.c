@@ -36,6 +36,16 @@ static void increment_cursor()
     state.cursor++;
 }
 
+static void increment_cursor_for_char(char c)
+{
+    if (*state.cursor != c)
+    {
+        errx(1, "Expected '%c' at line %zu, column %zu", c, state.line,
+             state.column);
+    }
+    increment_cursor();
+}
+
 static void skip_whitespace()
 {
     while (isspace(*state.cursor))
@@ -49,171 +59,168 @@ static struct token *create_non_terminal_token(enum TOKEN_TYPE type)
     token->value = malloc(2);
     token->value[0] = *state.cursor;
     token->value[1] = '\0';
+    token->line = state.line;
+    token->column = state.column;
     state.look_ahead = token;
+
+    if (type != TOKEN_TYPE_EOF)
+        increment_cursor();
+    return token;
+}
+
+static struct token *create_string_token()
+{
+    struct token *token = malloc(sizeof(struct token));
+    token->type = TOKEN_TYPE_STRING;
+    token->line = state.line;
+    token->column = state.column;
+
+    increment_cursor();
+    char *start = state.cursor;
+    bool escaped = false;
+
+    while (*state.cursor != '"' || escaped)
+    {
+        escaped = false;
+        if (*state.cursor == '\\')
+            escaped = true;
+        increment_cursor();
+    }
+
+    token->value = malloc(state.cursor - start + 1);
+    memcpy(token->value, start, state.cursor - start);
+
+    token->value[state.cursor - start] = '\0';
+
+    increment_cursor();
+    return token;
+}
+
+static struct token *create_true_token()
+{
+    struct token *token = malloc(sizeof(struct token));
+    token->type = TOKEN_TYPE_BOOLEAN;
+    token->line = state.line;
+    token->column = state.column;
+    token->value = malloc(2);
+    token->value[0] = '1';
+    token->value[1] = '\0';
+
+    increment_cursor_for_char('t');
+    increment_cursor_for_char('r');
+    increment_cursor_for_char('u');
+    increment_cursor_for_char('e');
+
+    return token;
+}
+
+static struct token *create_false_token()
+{
+    struct token *token = malloc(sizeof(struct token));
+    token->type = TOKEN_TYPE_BOOLEAN;
+    token->value = malloc(2);
+    token->value[0] = '0';
+    token->value[1] = '\0';
+    token->line = state.line;
+    token->column = state.column;
+
+    increment_cursor_for_char('f');
+    increment_cursor_for_char('a');
+    increment_cursor_for_char('l');
+    increment_cursor_for_char('s');
+    increment_cursor_for_char('e');
+
+    return token;
+}
+
+static struct token *create_null_token()
+{
+    struct token *token = malloc(sizeof(struct token));
+    token->type = TOKEN_TYPE_NULL;
+    token->value = malloc(1);
+    token->value[0] = '\0';
+    token->line = state.line;
+    token->column = state.column;
+
+    increment_cursor_for_char('n');
+    increment_cursor_for_char('u');
+    increment_cursor_for_char('l');
+    increment_cursor_for_char('l');
+
+    return token;
+}
+
+static struct token *create_number_token()
+{
+    struct token *token = malloc(sizeof(struct token));
+    token->type = TOKEN_TYPE_NUMBER;
+    token->line = state.line;
+    token->column = state.column;
+
+    char *start = state.cursor;
+
+    bool negative = false;
+    bool decimal = false;
+
+    while (isdigit(*state.cursor) || *state.cursor == '-'
+           || *state.cursor == '.')
+    {
+        if (*state.cursor == '-')
+        {
+            if (negative)
+                errx(1, "Unexpected '-' at line %zu, column %zu", state.line,
+                     state.column);
+            negative = true;
+        }
+        else if (*state.cursor == '.')
+        {
+            if (decimal)
+                errx(1, "Unexpected '.' at line %zu, column %zu", state.line,
+                     state.column);
+            decimal = true;
+        }
+        increment_cursor();
+    }
+
+    token->value = malloc(state.cursor - start + 1);
+    memcpy(token->value, start, state.cursor - start);
+    token->value[state.cursor - start] = '\0';
+
     return token;
 }
 
 static struct token *generate_next_token()
 {
-    struct token *token = malloc(sizeof(struct token));
-    token->type = TOKEN_TYPE_NONE;
-    token->value = NULL;
+    struct token *token = NULL;
 
     skip_whitespace();
 
     if (*state.cursor == '\0')
-    {
-        struct token *token = create_non_terminal_token(TOKEN_TYPE_EOF);
-        increment_cursor();
-        return token;
-    }
+        token = create_non_terminal_token(TOKEN_TYPE_EOF);
+    else if (*state.cursor == '{')
+        token = create_non_terminal_token(TOKEN_TYPE_LEFT_BRACE);
+    else if (*state.cursor == '}')
+        token = create_non_terminal_token(TOKEN_TYPE_RIGHT_BRACE);
+    else if (*state.cursor == '[')
+        token = create_non_terminal_token(TOKEN_TYPE_LEFT_BRACKET);
+    else if (*state.cursor == ']')
+        token = create_non_terminal_token(TOKEN_TYPE_RIGHT_BRACKET);
+    else if (*state.cursor == ',')
+        token = create_non_terminal_token(TOKEN_TYPE_COMMA);
+    else if (*state.cursor == ':')
+        token = create_non_terminal_token(TOKEN_TYPE_COLON);
+    else if (*state.cursor == '"')
+        token = create_string_token();
+    else if (*state.cursor == 't')
+        token = create_true_token();
+    else if (*state.cursor == 'f')
+        token = create_false_token();
+    else if (*state.cursor == 'n')
+        token = create_null_token();
+    else if (isdigit(*state.cursor) || *state.cursor == '-')
+        token = create_number_token();
 
-    if (*state.cursor == '{')
-    {
-        token->type = TOKEN_TYPE_LEFT_BRACE;
-        token->value = malloc(2);
-        token->value[0] = *state.cursor;
-        token->value[1] = '\0';
-        token->line = state.line;
-        token->column = state.column;
-        increment_cursor();
-        return token;
-    }
-
-    if (*state.cursor == '}')
-    {
-        token->type = TOKEN_TYPE_RIGHT_BRACE;
-        token->value = malloc(2);
-        token->value[0] = *state.cursor;
-        token->value[1] = '\0';
-        token->line = state.line;
-        token->column = state.column;
-        increment_cursor();
-        return token;
-    }
-
-    if (*state.cursor == '[')
-    {
-        token->type = TOKEN_TYPE_LEFT_BRACKET;
-        token->value = malloc(2);
-        token->value[0] = *state.cursor;
-        token->value[1] = '\0';
-        token->line = state.line;
-        token->column = state.column;
-        increment_cursor();
-        return token;
-    }
-
-    if (*state.cursor == ']')
-    {
-        token->type = TOKEN_TYPE_RIGHT_BRACKET;
-        token->value = malloc(2);
-        token->value[0] = *state.cursor;
-        token->value[1] = '\0';
-        token->line = state.line;
-        token->column = state.column;
-        increment_cursor();
-        return token;
-    }
-
-    if (*state.cursor == ',')
-    {
-        token->type = TOKEN_TYPE_COMMA;
-        token->value = malloc(2);
-        token->value[0] = *state.cursor;
-        token->value[1] = '\0';
-        token->line = state.line;
-        token->column = state.column;
-        increment_cursor();
-        return token;
-    }
-
-    if (*state.cursor == ':')
-    {
-        token->type = TOKEN_TYPE_COLON;
-        token->value = malloc(2);
-        token->value[0] = *state.cursor;
-        token->value[1] = '\0';
-        token->line = state.line;
-        token->column = state.column;
-        increment_cursor();
-        return token;
-    }
-
-    if (*state.cursor == '"')
-    {
-        token->type = TOKEN_TYPE_STRING;
-        char *start = ++state.cursor;
-
-        while (*state.cursor != '"')
-            increment_cursor();
-
-        token->value = malloc(state.cursor - start + 1);
-        memcpy(token->value, start, state.cursor - start);
-
-        token->value[state.cursor - start] = '\0';
-
-        token->line = state.line;
-        token->column = state.column;
-        increment_cursor();
-        return token;
-    }
-
-    if (*state.cursor == 't' && *(state.cursor + 1) == 'r'
-        && *(state.cursor + 2) == 'u' && *(state.cursor + 3) == 'e')
-    {
-        token->type = TOKEN_TYPE_BOOLEAN;
-        token->value = (char *)true;
-        state.cursor += 4;
-        state.column += 4;
-        return token;
-    }
-
-    if (*state.cursor == 'f' && *(state.cursor + 1) == 'a'
-        && *(state.cursor + 2) == 'l' && *(state.cursor + 3) == 's'
-        && *(state.cursor + 4) == 'e')
-    {
-        token->type = TOKEN_TYPE_BOOLEAN;
-        token->value = (char *)false;
-        state.cursor += 5;
-        state.column += 5;
-        return token;
-    }
-
-    if (*state.cursor == 'n' && *(state.cursor + 1) == 'u'
-        && *(state.cursor + 2) == 'l' && *(state.cursor + 3) == 'l')
-    {
-        token->type = TOKEN_TYPE_NULL;
-        token->value = NULL;
-        state.cursor += 4;
-        state.column += 4;
-        return token;
-    }
-
-    if (*state.cursor == '-' || (*state.cursor >= '0' && *state.cursor <= '9'))
-    {
-        token->type = TOKEN_TYPE_NUMBER;
-        char *start = state.cursor;
-
-        while (*state.cursor >= '0' && *state.cursor <= '9')
-            increment_cursor();
-
-        if (*state.cursor == '.')
-        {
-            increment_cursor();
-
-            while (*state.cursor >= '0' && *state.cursor <= '9')
-                increment_cursor();
-        }
-
-        token->value = malloc(state.cursor - start + 1);
-        memcpy(token->value, start, state.cursor - start);
-
-        token->value[state.cursor - start] = '\0';
-
-        return token;
-    }
-    return NULL;
+    return token;
 }
 
 void lexer_init(char *json)

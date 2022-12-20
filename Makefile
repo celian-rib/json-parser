@@ -9,7 +9,7 @@ TARGET_LIB = libjson.so
 SRC_OBJS= lexer.o parser.o json_object.o 
 OBJS = main.o $(SRC_OBJS)
 
-TESTS_OBJS = $(SRC_OBJS) tests/test_suite.o
+TESTS_OBJS = $(SRC_OBJS) tests/test_json.o tests/test_lexer.o
 
 all: library
 
