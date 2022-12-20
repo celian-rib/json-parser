@@ -7,7 +7,7 @@
 
 ```c
 // Parse your input string into a json object
-json_object *json = json_parse(input);
+json *json = json_parse(input);
 
 // Get values from the json object using a query string
 char* = json_get_value(json, "value1.value2.value4");
@@ -143,7 +143,7 @@ char *val = json_get_value(json, NULL);
 > You can get `my_obj` using:
 
 ```c
-json_object *my_obj = get_value(json, "my_obj");
+json *my_obj = get_value(json, "my_obj");
 ```
 
 ### Exended grammar
