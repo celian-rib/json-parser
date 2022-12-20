@@ -3,13 +3,6 @@
 
 > Made for C
 
-### Philosophy
-
-- Ease of use
-- Fast
-- Robust
-- Tiny
-
 ### How to use
 
 ```c
